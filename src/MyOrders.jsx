@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import MessageModal from './MessageModal';
-import './App.css'; // Import App.css for styling
+import './App.css';
+
+// Get the API base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'; // Fallback for local dev
 
 // MyOrders component for users to view their personal order history.
 function MyOrders({ userEmail }) {
@@ -8,13 +11,8 @@ function MyOrders({ userEmail }) {
   const [message, setMessage] = useState('');
   const [showModal, setShowModal] = useState(false);
 
-  // Fetch orders for the logged-in user when the component mounts or userEmail changes.
   useEffect(() => {
     const fetchMyOrders = async () => {
-      // It's crucial that userEmail is available here.
-      // If userEmail is not directly stored in localStorage, you might need to
-      // fetch user data from an /api/users/profile endpoint after login
-      // to get the email and pass it down. For now, we rely on App.jsx setting it.
       if (!userEmail) {
         setMessage('User email not available to fetch orders. Please log in again.');
         setShowModal(true);
@@ -29,9 +27,7 @@ function MyOrders({ userEmail }) {
           return;
         }
 
-        // --- IMPORTANT CHANGE HERE ---
-        // Fetch orders from the new user-specific endpoint
-        const res = await fetch('/api/orders/my-orders', {
+        const res = await fetch(`${API_BASE_URL}/api/orders/my-orders`, { // Updated API URL
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -52,7 +48,7 @@ function MyOrders({ userEmail }) {
     };
 
     fetchMyOrders();
-  }, [userEmail]); // Re-fetch if userEmail changes
+  }, [userEmail]);
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -76,7 +72,6 @@ function MyOrders({ userEmail }) {
               <div className="order-details">
                 {order.products.map((item, idx) => (
                   <div key={idx} className="order-item">
-                    {/* Ensure product.name is available after populate */}
                     <span className="order-item-name">{item.product?.name || 'Product'}</span>
                     <span>x {item.quantity}</span>
                   </div>

@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
-import MessageModal from './MessageModal'; // Import the MessageModal
-import './App.css'; // Import App.css for styling
+import MessageModal from './MessageModal';
+import './App.css';
+
+// Get the API base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'; // Fallback for local dev
 
 // LoginForm component for user authentication.
-// It takes an onLoginSuccess function as a prop to notify the parent component of a successful login.
 function LoginForm({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState(''); // State for modal message
-  const [showModal, setShowModal] = useState(false); // State to control modal visibility
+  const [message, setMessage] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
-  // Handles the login form submission.
   const loginUser = async (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
+    e.preventDefault();
 
     try {
-      const res = await fetch('/api/users/login', {
+      const res = await fetch(`${API_BASE_URL}/api/users/login`, { // Updated API URL
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -27,9 +28,9 @@ function LoginForm({ onLoginSuccess }) {
         setMessage('Login successful!');
         setShowModal(true);
         console.log('Login successful, token:', data.token);
-        localStorage.setItem('token', data.token); // Store token in local storage
+        localStorage.setItem('token', data.token);
         if (onLoginSuccess) {
-          onLoginSuccess(data.user); // Notify parent of successful login
+          onLoginSuccess(data.user);
         }
       } else {
         setMessage(data.message || 'Login failed. Please try again.');
@@ -42,7 +43,6 @@ function LoginForm({ onLoginSuccess }) {
     }
   };
 
-  // Closes the message modal.
   const handleCloseModal = () => {
     setShowModal(false);
     setMessage('');
@@ -52,7 +52,6 @@ function LoginForm({ onLoginSuccess }) {
     <div className="form-container">
       <h2 className="form-title">Login</h2>
       <form onSubmit={loginUser} className="form-fields">
-        {/* Email input field */}
         <input
           type="email"
           value={email}
@@ -61,7 +60,6 @@ function LoginForm({ onLoginSuccess }) {
           className="form-input"
           required
         />
-        {/* Password input field */}
         <input
           type="password"
           value={password}
@@ -70,7 +68,6 @@ function LoginForm({ onLoginSuccess }) {
           className="form-input"
           required
         />
-        {/* Submit button */}
         <button
           type="submit"
           className="form-button login"
@@ -78,8 +75,6 @@ function LoginForm({ onLoginSuccess }) {
           Login
         </button>
       </form>
-
-      {/* Message modal */}
       <MessageModal message={message} onClose={handleCloseModal} />
     </div>
   );

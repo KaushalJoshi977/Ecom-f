@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import MessageModal from './MessageModal';
-import './App.css'; // Import App.css for styling
+import './App.css';
+
+// Get the API base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'; // Fallback for local dev
 
 // AllOrders component for administrators to view and manage all orders.
 function AllOrders() {
@@ -8,7 +11,6 @@ function AllOrders() {
   const [message, setMessage] = useState('');
   const [showModal, setShowModal] = useState(false);
 
-  // Function to fetch all orders from the backend.
   const fetchAllOrders = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -18,9 +20,7 @@ function AllOrders() {
         return;
       }
 
-      // Assuming there's a backend endpoint to get all orders (e.g., GET /api/orders)
-      // and it's protected by `adminOnly` middleware.
-      const res = await fetch('/api/orders', {
+      const res = await fetch(`${API_BASE_URL}/api/orders`, { // Updated API URL
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -40,12 +40,10 @@ function AllOrders() {
     }
   };
 
-  // Fetch all orders on component mount.
   useEffect(() => {
     fetchAllOrders();
   }, []);
 
-  // Handles updating the status of an order.
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
@@ -55,7 +53,7 @@ function AllOrders() {
         return;
       }
 
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, { // Updated API URL
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +67,7 @@ function AllOrders() {
       if (res.ok) {
         setMessage(`Order ${orderId.substring(0, 8)}... status updated to ${newStatus}.`);
         setShowModal(true);
-        fetchAllOrders(); // Re-fetch orders to update the list
+        fetchAllOrders();
       } else {
         setMessage(data.message || 'Failed to update order status.');
         setShowModal(true);

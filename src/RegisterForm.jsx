@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
-import MessageModal from './MessageModal'; // Import the MessageModal
-import './App.css'; // Import App.css for styling
+import MessageModal from './MessageModal';
+import './App.css';
+
+// Get the API base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'; // Fallback for local dev
 
 // RegisterForm component for new user registration.
-// It takes an onRegisterSuccess function as a prop to notify the parent component of a successful registration.
 function RegisterForm({ onRegisterSuccess }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState(''); // State for modal message
-  const [showModal, setShowModal] = useState(false); // State to control modal visibility
+  const [message, setMessage] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
-  // Handles the registration form submission.
   const registerUser = async (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
+    e.preventDefault();
 
     try {
-      const res = await fetch('/api/users/register', {
+      const res = await fetch(`${API_BASE_URL}/api/users/register`, { // Updated API URL
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password })
@@ -27,11 +28,11 @@ function RegisterForm({ onRegisterSuccess }) {
       if (res.ok) {
         setMessage('Registration successful! You can now log in.');
         setShowModal(true);
-        setName(''); // Clear form fields
+        setName('');
         setEmail('');
         setPassword('');
         if (onRegisterSuccess) {
-          onRegisterSuccess(); // Notify parent of successful registration
+          onRegisterSuccess();
         }
       } else {
         setMessage(data.message || 'Registration failed. Please try again.');
@@ -44,7 +45,6 @@ function RegisterForm({ onRegisterSuccess }) {
     }
   };
 
-  // Closes the message modal.
   const handleCloseModal = () => {
     setShowModal(false);
     setMessage('');
@@ -54,7 +54,6 @@ function RegisterForm({ onRegisterSuccess }) {
     <div className="form-container">
       <h2 className="form-title">Register</h2>
       <form onSubmit={registerUser} className="form-fields">
-        {/* Name input field */}
         <input
           type="text"
           value={name}
@@ -63,7 +62,6 @@ function RegisterForm({ onRegisterSuccess }) {
           className="form-input"
           required
         />
-        {/* Email input field */}
         <input
           type="email"
           value={email}
@@ -72,7 +70,6 @@ function RegisterForm({ onRegisterSuccess }) {
           className="form-input"
           required
         />
-        {/* Password input field */}
         <input
           type="password"
           value={password}
@@ -81,7 +78,6 @@ function RegisterForm({ onRegisterSuccess }) {
           className="form-input"
           required
         />
-        {/* Submit button */}
         <button
           type="submit"
           className="form-button register"
@@ -89,8 +85,6 @@ function RegisterForm({ onRegisterSuccess }) {
           Register
         </button>
       </form>
-
-      {/* Message modal */}
       <MessageModal message={message} onClose={handleCloseModal} />
     </div>
   );

@@ -1,30 +1,24 @@
 import React, { useState } from 'react';
 import MessageModal from './MessageModal';
-import './App.css'; // Import App.css for styling
+import './App.css';
+
+// Get the API base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'; // Fallback for local dev
 
 // CheckoutPage component displays the order summary and allows the user to confirm the order.
 function CheckoutPage({ orderDetails, onOrderConfirmed, onCancelCheckout }) {
   const [message, setMessage] = useState('');
   const [showModal, setShowModal] = useState(false);
 
-  // Handles the confirmation of the order.
   const handleConfirmOrder = async () => {
-    // Ensure orderDetails and userEmail are available
     if (!orderDetails || !orderDetails.userEmail || !orderDetails.products || orderDetails.products.length === 0) {
       setMessage('Invalid order details. Please go back and try again.');
       setShowModal(true);
       return;
     }
 
-    const token = localStorage.getItem('token'); // Get token from local storage
-    const userEmail = orderDetails.userEmail; // Get user email from order details
-
-    // --- Debugging Logs ---
-    console.log('Attempting to confirm order...');
-    console.log('Token from localStorage:', token);
-    console.log('User Email for order:', userEmail);
-    console.log('Order Products:', orderDetails.products);
-    // --- End Debugging Logs ---
+    const token = localStorage.getItem('token');
+    const userEmail = orderDetails.userEmail;
 
     if (!token) {
       setMessage('You are not authorized. Please log in again.');
@@ -33,11 +27,11 @@ function CheckoutPage({ orderDetails, onOrderConfirmed, onCancelCheckout }) {
     }
 
     try {
-      const res = await fetch('/api/orders', {
+      const res = await fetch(`${API_BASE_URL}/api/orders`, { // Updated API URL
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` // Include token for authentication
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           userEmail: userEmail,
@@ -50,7 +44,6 @@ function CheckoutPage({ orderDetails, onOrderConfirmed, onCancelCheckout }) {
       if (res.ok) {
         setMessage('Order placed successfully!');
         setShowModal(true);
-        // Notify parent (App.jsx) that the order was confirmed
         if (onOrderConfirmed) {
           onOrderConfirmed();
         }
@@ -65,7 +58,6 @@ function CheckoutPage({ orderDetails, onOrderConfirmed, onCancelCheckout }) {
     }
   };
 
-  // Closes the message modal.
   const handleCloseModal = () => {
     setShowModal(false);
     setMessage('');

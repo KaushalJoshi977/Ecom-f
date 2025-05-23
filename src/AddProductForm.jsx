@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import MessageModal from './MessageModal'; // Import MessageModal
-import './App.css'; // Import App.css for styling
+import MessageModal from './MessageModal';
+import './App.css';
+
+// Get the API base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'; // Fallback for local dev
 
 // AddProductForm component for administrators to add new products.
 function AddProductForm({ onProductAdded }) {
@@ -9,24 +12,22 @@ function AddProductForm({ onProductAdded }) {
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('');
   const [stock, setStock] = useState('');
-  const [image, setImage] = useState(''); // For image URL
+  const [image, setImage] = useState('');
   const [message, setMessage] = useState('');
   const [showModal, setShowModal] = useState(false);
 
-  // Handles the submission of the add product form.
   const handleAddProduct = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
 
     const productData = {
       name,
       description,
-      price: parseFloat(price), // Convert price to a number
+      price: parseFloat(price),
       category,
-      stock: parseInt(stock, 10), // Convert stock to an integer
+      stock: parseInt(stock, 10),
       image,
     };
 
-    // Basic validation
     if (!name || !description || !price || !category || !stock || !image) {
       setMessage('All fields are required.');
       setShowModal(true);
@@ -44,18 +45,18 @@ function AddProductForm({ onProductAdded }) {
     }
 
     try {
-      const token = localStorage.getItem('token'); // Get the JWT token from local storage
+      const token = localStorage.getItem('token');
       if (!token) {
         setMessage('You must be logged in as an admin to add products.');
         setShowModal(true);
         return;
       }
 
-      const res = await fetch('/api/products', {
+      const res = await fetch(`${API_BASE_URL}/api/products`, { // Updated API URL
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // Include the token for authentication
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(productData),
       });
@@ -65,7 +66,6 @@ function AddProductForm({ onProductAdded }) {
       if (res.ok) {
         setMessage('Product added successfully!');
         setShowModal(true);
-        // Clear form fields after successful submission
         setName('');
         setDescription('');
         setPrice('');
@@ -73,7 +73,7 @@ function AddProductForm({ onProductAdded }) {
         setStock('');
         setImage('');
         if (onProductAdded) {
-          onProductAdded(); // Notify parent component (App.jsx) that a product was added
+          onProductAdded();
         }
       } else {
         setMessage(data.message || 'Failed to add product. Please check your input.');
@@ -86,7 +86,6 @@ function AddProductForm({ onProductAdded }) {
     }
   };
 
-  // Closes the message modal.
   const handleCloseModal = () => {
     setShowModal(false);
     setMessage('');
@@ -96,7 +95,6 @@ function AddProductForm({ onProductAdded }) {
     <div className="form-container">
       <h2 className="form-title">Add New Product</h2>
       <form onSubmit={handleAddProduct} className="form-fields">
-        {/* Product Name */}
         <input
           type="text"
           value={name}
@@ -105,7 +103,6 @@ function AddProductForm({ onProductAdded }) {
           className="form-input"
           required
         />
-        {/* Description */}
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -114,7 +111,6 @@ function AddProductForm({ onProductAdded }) {
           className="form-textarea"
           required
         ></textarea>
-        {/* Price */}
         <input
           type="number"
           value={price}
@@ -125,7 +121,6 @@ function AddProductForm({ onProductAdded }) {
           className="form-input"
           required
         />
-        {/* Category */}
         <input
           type="text"
           value={category}
@@ -134,7 +129,6 @@ function AddProductForm({ onProductAdded }) {
           className="form-input"
           required
         />
-        {/* Stock */}
         <input
           type="number"
           value={stock}
@@ -145,7 +139,6 @@ function AddProductForm({ onProductAdded }) {
           className="form-input"
           required
         />
-        {/* Image URL */}
         <input
           type="url"
           value={image}
@@ -154,7 +147,6 @@ function AddProductForm({ onProductAdded }) {
           className="form-input"
           required
         />
-        {/* Submit Button */}
         <button
           type="submit"
           className="form-button add-product"
@@ -162,7 +154,6 @@ function AddProductForm({ onProductAdded }) {
           Add Product
         </button>
       </form>
-
       <MessageModal message={message} onClose={handleCloseModal} />
     </div>
   );
