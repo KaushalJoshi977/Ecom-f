@@ -1,35 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import MessageModal from './MessageModal'; // Import the MessageModal
-import './App.css'; // Import App.css for styling
+import MessageModal from './MessageModal';
+import './App.css';
+
+// Get the API base URL from environment variables
+// This line was missing or not used in your provided code
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'; // Fallback for local dev
 
 // ProductList component to display products and allow users to order them.
-function ProductList({ onProceedToCheckout }) { // Added onProceedToCheckout prop
-  const [products, setProducts] = useState([]); // State to store fetched products
-  const [cart, setCart] = useState({}); // State to store items in the cart: {productId: quantity}
-  const [message, setMessage] = useState(''); // State for modal message
-  const [showModal, setShowModal] = useState(false); // State to control modal visibility
-  const [userEmail, setUserEmail] = useState(''); // State to store the logged-in user's email
+function ProductList({ onProceedToCheckout }) {
+  const [products, setProducts] = useState([]);
+  const [cart, setCart] = useState({});
+  const [message, setMessage] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
-  // Fetch products from the backend when the component mounts.
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const token = localStorage.getItem('token'); // Get token from local storage
+        const token = localStorage.getItem('token');
         if (!token) {
           setMessage('You must be logged in to view products.');
           setShowModal(true);
           return;
         }
 
-        const res = await fetch('/api/products', {
+        // FIX: Use API_BASE_URL for the fetch request
+        const res = await fetch(`${API_BASE_URL}/api/products`, {
           headers: {
-            'Authorization': `Bearer ${token}` // Include token in headers
+            'Authorization': `Bearer ${token}`
           }
         });
         const data = await res.json();
 
         if (res.ok) {
-          setProducts(data); // Set the fetched products
+          setProducts(data);
         } else {
           setMessage(data.message || 'Failed to fetch products.');
           setShowModal(true);
@@ -41,7 +45,6 @@ function ProductList({ onProceedToCheckout }) { // Added onProceedToCheckout pro
       }
     };
 
-    // Retrieve user email from localStorage, which is set during login in App.jsx
     const emailFromStorage = localStorage.getItem('userEmail');
     if (emailFromStorage) {
       setUserEmail(emailFromStorage);
@@ -52,14 +55,12 @@ function ProductList({ onProceedToCheckout }) { // Added onProceedToCheckout pro
     fetchProducts();
   }, []);
 
-  // Handles quantity change for a product in the cart.
   const handleQuantityChange = (productId, quantity) => {
-    // Ensure quantity is a positive number and does not exceed stock
     const product = products.find(p => p._id === productId);
-    if (!product) return; // Should not happen if productId is valid
+    if (!product) return;
 
     let newQuantity = Math.max(0, parseInt(quantity, 10) || 0);
-    newQuantity = Math.min(newQuantity, product.stock); // Do not exceed available stock
+    newQuantity = Math.min(newQuantity, product.stock);
 
     setCart(prevCart => ({
       ...prevCart,
@@ -67,19 +68,18 @@ function ProductList({ onProceedToCheckout }) { // Added onProceedToCheckout pro
     }));
   };
 
-  // Prepares the order details and calls the onProceedToCheckout prop.
   const prepareOrderForCheckout = () => {
     let totalAmount = 0;
     const orderProducts = Object.keys(cart)
-      .filter(productId => cart[productId] > 0) // Only include products with quantity > 0
+      .filter(productId => cart[productId] > 0)
       .map(productId => {
         const product = products.find(p => p._id === productId);
         const quantity = cart[productId];
         totalAmount += product.price * quantity;
         return {
-          productName: product.name, // Use productName as expected by backend
+          productName: product.name,
           quantity: quantity,
-          price: product.price // Include price for checkout display
+          price: product.price
         };
       });
 
@@ -95,7 +95,6 @@ function ProductList({ onProceedToCheckout }) { // Added onProceedToCheckout pro
       return;
     }
 
-    // Call the parent's function to proceed to checkout page
     if (onProceedToCheckout) {
       onProceedToCheckout({
         userEmail: userEmail,
@@ -105,7 +104,6 @@ function ProductList({ onProceedToCheckout }) { // Added onProceedToCheckout pro
     }
   };
 
-  // Closes the message modal.
   const handleCloseModal = () => {
     setShowModal(false);
     setMessage('');
@@ -164,11 +162,10 @@ function ProductList({ onProceedToCheckout }) { // Added onProceedToCheckout pro
         </div>
       )}
 
-      {/* Place Order Button */}
       {products.length > 0 && (
         <div className="place-order-button-container">
           <button
-            onClick={prepareOrderForCheckout} // Changed to prepare for checkout
+            onClick={prepareOrderForCheckout}
             className="place-order-button"
           >
             Proceed to Checkout
@@ -176,7 +173,6 @@ function ProductList({ onProceedToCheckout }) { // Added onProceedToCheckout pro
         </div>
       )}
 
-      {/* Message modal */}
       <MessageModal message={message} onClose={handleCloseModal} />
     </div>
   );
