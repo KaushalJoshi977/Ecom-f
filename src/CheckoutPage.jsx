@@ -74,13 +74,13 @@ function CheckoutPage({ orderDetails, onOrderConfirmed, onCancelCheckout }) {
               <div key={index} className="checkout-item-card">
                 <span className="checkout-item-name">{item.productName}</span>
                 <span className="checkout-item-quantity">x {item.quantity}</span>
-                <span className="checkout-item-price">${(item.price * item.quantity).toFixed(2)}</span>
+                <span className="checkout-item-price">Rs.{(item.price * item.quantity).toFixed(2)}</span>
               </div>
             ))}
           </div>
           <div className="checkout-total">
             <h3>Total:</h3>
-            <span className="checkout-total-amount">${orderDetails.totalAmount.toFixed(2)}</span>
+            <span className="checkout-total-amount">Rs.{orderDetails.totalAmount.toFixed(2)}</span>
           </div>
 
           <div className="checkout-buttons">
